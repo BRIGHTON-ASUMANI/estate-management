@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react/no-unescaped-entities */
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
@@ -19,42 +20,47 @@ import {
   Building2,
   Search,
   Key,
-  Users
+  Users,
+  Link
 } from "lucide-react"
 import { LogoutButton } from '@/components/Logout'
+import PropertiesPage from './properties/page'
 
-function Sidebar() {
+
+// Sidebar Component
+function Sidebar({ role }: { role: string }) {
+  const sidebarItems = [
+    { label: 'Overview', icon: <HomeIcon className="mr-3 h-4 w-4" />, to: '/' },
+    { label: 'Properties', icon: <Building2 className="mr-3 h-4 w-4" />, to: '/properties' },
+    { label: role === 'landlord' ? 'Leases' : 'My Leases', icon: <Key className="mr-3 h-4 w-4" />, to: '/leases' },
+    { label: 'Tenants', icon: <Users className="mr-3 h-4 w-4" />, to: '/tenants' },
+    { label: 'Analytics', icon: <BarChart className="mr-3 h-4 w-4" />, to: '/analytics' }
+  ];
+
   return (
     <div className="w-72 p-6 space-y-6 bg-blue-950 h-full border-r border-amber-200/10">
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-amber-100">Estate Elite</h2>
+        <h2 className="text-2xl font-semibold text-amber-100">Estate Navigator</h2>
         <p className="text-amber-200/60 text-sm mt-1">Property Management</p>
       </div>
-      
+
       <div className="space-y-1">
-        <Button variant="ghost" className="w-full justify-start text-amber-100/80 hover:text-amber-100 hover:bg-blue-900/50">
-          <HomeIcon className="mr-3 h-4 w-4" />
-          Overview
-        </Button>
-        <Button variant="ghost" className="w-full justify-start text-amber-100/80 hover:text-amber-100 hover:bg-blue-900/50">
-          <Building2 className="mr-3 h-4 w-4" />
-          Properties
-        </Button>
-        <Button variant="ghost" className="w-full justify-start text-amber-100/80 hover:text-amber-100 hover:bg-blue-900/50">
-          <Key className="mr-3 h-4 w-4" />
-          Leases
-        </Button>
-        <Button variant="ghost" className="w-full justify-start text-amber-100/80 hover:text-amber-100 hover:bg-blue-900/50">
-          <Users className="mr-3 h-4 w-4" />
-          Tenants
-        </Button>
-        <Button variant="ghost" className="w-full justify-start text-amber-100/80 hover:text-amber-100 hover:bg-blue-900/50">
-          <BarChart className="mr-3 h-4 w-4" />
-          Analytics
-        </Button>
+        {/* Sidebar Navigation */}
+        {sidebarItems.map((item, index) => (
+        <a key={index} href={item.to} className="w-full block">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-amber-100/80 hover:text-amber-100 hover:bg-blue-900/50"
+          >
+            {item.icon}
+            {item.label}
+          </Button>
+        </a>
+      ))}
       </div>
 
       <div className="pt-6 space-y-1">
+        {/* Settings Section */}
         <div className="text-amber-200/40 text-xs font-medium px-3 mb-2">Settings</div>
         <Button variant="ghost" className="w-full justify-start text-amber-100/80 hover:text-amber-100 hover:bg-blue-900/50">
           <Settings className="mr-3 h-4 w-4" />
@@ -66,20 +72,38 @@ function Sidebar() {
         </Button>
       </div>
     </div>
-  )
+  );
 }
 
+
+// UserGreeting Component with dynamic sidebar role-based rendering
 async function UserGreeting() {
-  const supabase = await createClient()
-  const { data, error } = await supabase.auth.getUser()
-  
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getUser();
+
   if (error || !data?.user) {
-    redirect('/login')
+    redirect('/login');
+    return null;
   }
-  
+
+  // Fetch the user's profile to check if the role is 'landlord'
+  const { data: profile, error: profileError } = await supabase
+    .from('profile')
+    .select('role')
+    .eq('user_id', data.user.id)
+    .single();
+
+  // if (profileError || !profile || profile.role !== 'landlord') {
+  //   // Redirect or show a message if the user is not a landlord
+  //   redirect('/not-authorized') // You can redirect to a different page or show an error
+  //   return null
+  // }
+
+  // const role = profile.role;
+
   return (
     <div className="flex h-screen">
-      <Sidebar />
+      <Sidebar role='tenant' />
       
       <div className="flex-1 bg-gradient-to-br from-blue-950 via-blue-900 to-blue-950">
         {/* Top Navigation */}
@@ -156,9 +180,10 @@ async function UserGreeting() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
+// Fallback Component
 function UserGreetingFallback() {
   return (
     <div className="flex h-screen">
@@ -171,13 +196,14 @@ function UserGreetingFallback() {
         </Card>
       </div>
     </div>
-  )
+  );
 }
 
+// Home Component
 export default function Home() {
   return (
     <Suspense fallback={<UserGreetingFallback />}>
       <UserGreeting />
     </Suspense>
-  )
+  );
 }
