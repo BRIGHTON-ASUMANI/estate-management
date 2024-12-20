@@ -32,3 +32,37 @@ export default function RootLayout({
     </html>
   );
 }
+
+
+
+// src/app/layout.tsx
+// import "./globals.css";
+// import Sidebar from "@/components/Sidebar";
+// import { createClient } from "@/utils/supabase/client";
+
+// export const metadata = {
+//   title: "Estate Navigator",
+//   description: "Property Management App",
+// };
+
+// export default async function RootLayout({ children }: { children: React.ReactNode }) {
+//   // Initialize Supabase client and fetch current user
+//   const supabase = await createClient();
+//   const user = await supabase.auth.getUser(); // Get the authenticated user
+
+//   // Check if the user is logged in
+//   const isLoggedIn = user.data?.user !== null;
+
+//   return (
+//     <html lang="en">
+//       <body>
+//         <div className="flex">
+//           {isLoggedIn && <Sidebar role="landlord" />} {/* Show Sidebar if user is logged in */}
+//           <main className="flex-grow bg-gradient-to-br from-blue-950 via-blue-900 to-blue-950">
+//             {children}
+//           </main>
+//         </div>
+//       </body>
+//     </html>
+//   );
+// }
